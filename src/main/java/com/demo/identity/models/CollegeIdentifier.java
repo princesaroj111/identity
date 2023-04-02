@@ -10,5 +10,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class CollegeIdentifier implements Serializable {
   private String name;
+  private String email;
   private String collegeName;
 }

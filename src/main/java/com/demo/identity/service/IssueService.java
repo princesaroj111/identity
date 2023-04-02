@@ -1,11 +1,14 @@
 package com.demo.identity.service;
 
+import com.demo.identity.digimocker.DigiMockerConnector;
 import com.demo.identity.models.CollegeIdentifier;
 import com.demo.identity.models.CredentialContext;
 import com.google.gson.Gson;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Stream;
+
 import org.springframework.stereotype.Service;
 import trinsic.TrinsicUtilities;
 import trinsic.okapi.DidException;
@@ -28,7 +31,15 @@ public class IssueService {
       throws InvalidProtocolBufferException, ExecutionException, InterruptedException,
       DidException {
     var trinsic = new TrinsicService(TrinsicUtilities.getTrinsicServiceOptions());
-    //TODO add verification from digiMocker
+
+    String userName = credentialContext.getCollegeIdentifier().getName();
+    String userEmail = credentialContext.getCollegeIdentifier().getEmail();
+    String collegeName = credentialContext.getCollegeIdentifier().getCollegeName();
+    if (!DigiMockerConnector.isCollegeCredentialValid(userName, userEmail, collegeName))
+    {
+      throw new RuntimeException("College Credentials could not be fetched");
+    }
+
     var credential = issueCredential(trinsic, TEMPLATE_ID, credentialContext.getCollegeIdentifier());
     trinsic.setAuthToken(credentialContext.getWalletAddress());
     var insertItemResponse =
