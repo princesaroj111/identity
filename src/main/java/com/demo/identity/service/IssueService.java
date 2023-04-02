@@ -11,31 +11,32 @@ import trinsic.TrinsicUtilities;
 import trinsic.okapi.DidException;
 import trinsic.services.TemplateService;
 import trinsic.services.TrinsicService;
-import trinsic.services.account.v1.LoginRequest;
 import trinsic.services.universalwallet.v1.InsertItemRequest;
+import trinsic.services.universalwallet.v1.InsertItemResponse;
 import trinsic.services.verifiablecredentials.templates.v1.CreateCredentialTemplateRequest;
+import trinsic.services.verifiablecredentials.templates.v1.GetCredentialTemplateRequest;
 import trinsic.services.verifiablecredentials.templates.v1.TemplateField;
 import trinsic.services.verifiablecredentials.v1.IssueFromTemplateRequest;
 
 @Service
 public class IssueService {
+  private static final String TEMPLATE_ID = "urn:template:distracted-swartz-zczmugikjsbw:collegeverificationcertificates";
   private final static String ISSUER =
       "CiVodHRwczovL3RyaW5zaWMuaWQvc2VjdXJpdHkvdjEvb2Jlcm9uEmQKK3Vybjp0cmluc2ljOndhbGxldHM6elJURXJWaVlVVnhEVDQ5dXdFUHkzYloiNXVybjp0cmluc2ljOmVjb3N5c3RlbXM6ZGlzdHJhY3RlZC1zd2FydHotemN6bXVnaWtqc2J3GjCEmwjz63eOVo8kQWDNSQ1KzvF7bCUALPcAyYvaYKDRKs3XVEjUx6dk5qU4clEyW_YiAA==";
 
-  String issueCredential(final CredentialContext credentialContext)
+  public InsertItemResponse issueCredential(final CredentialContext credentialContext)
       throws InvalidProtocolBufferException, ExecutionException, InterruptedException,
       DidException {
     var trinsic = new TrinsicService(TrinsicUtilities.getTrinsicServiceOptions());
-    var templateId = defineTemplate(trinsic.template());
     //TODO add verification from digiMocker
-    var credential = issueCredential(trinsic, templateId, credentialContext.getCollegeIdentifier());
+    var credential = issueCredential(trinsic, TEMPLATE_ID, credentialContext.getCollegeIdentifier());
     trinsic.setAuthToken(credentialContext.getWalletAddress());
     var insertItemResponse =
         trinsic
             .wallet()
             .insertItem(InsertItemRequest.newBuilder().setItemJson(credential).build())
             .get();
-    return insertItemResponse.getItemId();
+    return insertItemResponse;
   }
 
   private String issueCredential(
@@ -72,6 +73,7 @@ public class IssueService {
     return issueResponse.getDocumentJson();
   }
 
+  //Below to be used for creating new template
   private String defineTemplate(final TemplateService templateService)
       throws InvalidProtocolBufferException, DidException, ExecutionException,
       InterruptedException {
@@ -94,7 +96,7 @@ public class IssueService {
     // Create template request
     var templateRequest =
         CreateCredentialTemplateRequest.newBuilder()
-            .setName("CollegeVerificationCertificate")
+            .setName("CollegeVerificationCertificates")
             .setAllowAdditionalFields(true)
             .putAllFields(fields)
             .build();
@@ -103,6 +105,7 @@ public class IssueService {
     var template = templateService.create(templateRequest).get();
     // }
 
+    System.out.println(template.getData().getId());
     return template.getData().getId();
   }
 }

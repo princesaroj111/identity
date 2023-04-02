@@ -1,13 +1,15 @@
 package com.demo.identity.models;
 
+import java.io.Serializable;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
-@NoArgsConstructor
+@AllArgsConstructor
 @Setter
-public class CredentialContext {
+public class CredentialContext  implements Serializable {
   private CollegeIdentifier collegeIdentifier;
   private String walletAddress;
 }

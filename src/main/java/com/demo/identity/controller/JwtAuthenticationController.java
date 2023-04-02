@@ -33,23 +33,23 @@ public class JwtAuthenticationController {
   private JwtUserDetailsService userDetailsService;
 
   @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
-  public ResponseEntity<?> createAuthenticationToken(@RequestBody final JwtRequest authenticationRequest) throws Exception {
+  public ResponseEntity<?> createAuthenticationToken(
+      @RequestBody final JwtRequest authenticationRequest) throws Exception {
 
     authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
 
     final UserDetails userDetails = userDetailsService
         .loadUserByUsername(authenticationRequest.getUsername());
     final Map<String, Object> claims = new HashMap<>();
-    claims.put("walletAddress", authenticationRequest.getWalletAddress());
-
-    final String token = jwtTokenUtil.doGenerateToken(claims,userDetails.getUsername());
+    final String token = jwtTokenUtil.doGenerateToken(claims, userDetails.getUsername());
 
     return ResponseEntity.ok(new JwtResponse(token));
   }
 
   private void authenticate(String username, String password) throws Exception {
     try {
-      authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+      authenticationManager.authenticate(
+          new UsernamePasswordAuthenticationToken(username, password));
     } catch (DisabledException e) {
       throw new Exception("USER_DISABLED", e);
     } catch (BadCredentialsException e) {
