@@ -10,12 +10,14 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
 import trinsic.TrinsicUtilities;
 import trinsic.okapi.DidException;
 import trinsic.services.TrinsicService;
 import trinsic.services.verifiablecredentials.v1.CreateProofRequest;
 import trinsic.services.verifiablecredentials.v1.VerifyProofRequest;
 
+@Service
 public class VerificationService {
 
   public Map getItemProof(final String itemId)
@@ -32,7 +34,7 @@ public class VerificationService {
     return new ObjectMapper().readValue(createProofResponse.getProofDocumentJson(), Map.class);
   }
 
-  public void verifyProof(final Map<String, Object> proof)
+  public void verifyProof(final String proof)
       throws InvalidProtocolBufferException, DidException, ExecutionException,
       InterruptedException, VerificationFailedException {
     var trinsic = new TrinsicService(TrinsicUtilities.getTrinsicServiceOptions());
@@ -41,7 +43,7 @@ public class VerificationService {
         trinsic
             .credential()
             .verifyProof(
-                VerifyProofRequest.newBuilder().setProofDocumentJson(proof.toString()).build())
+                VerifyProofRequest.newBuilder().setProofDocumentJson(proof).build())
             .get();
 
     if (!verifyProofResponse.getIsValid()) {

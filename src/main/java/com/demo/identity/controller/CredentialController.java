@@ -1,6 +1,6 @@
 package com.demo.identity.controller;
 
-import static org.springframework.security.core.context.SecurityContextHolder.*;
+import static org.springframework.security.core.context.SecurityContextHolder.getContext;
 
 import com.demo.identity.exception.VerificationFailedException;
 import com.demo.identity.models.CollegeIdentifier;
@@ -10,9 +10,11 @@ import com.demo.identity.service.IssueService;
 import com.demo.identity.service.VerificationService;
 import com.demo.identity.service.WalletService;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.ProtocolStringList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,10 +53,10 @@ public class CredentialController {
   }
 
   @GetMapping("wallet/items")
-  ProtocolStringList getWalletCredentials()
+  List getWalletCredentials()
       throws InvalidProtocolBufferException, ExecutionException, InterruptedException,
-      DidException {
-    return walletService.listWalletItems();
+      DidException, JsonProcessingException {
+    return new ObjectMapper().readValue(walletService.listWalletItems().toString(), List.class);
   }
 
   @GetMapping("wallet/items/{itemId}")
@@ -71,12 +73,15 @@ public class CredentialController {
     return verificationService.getItemProof(itemId);
   }
 
-  @PostMapping("/verify")
-  void verifyCredential(
-      @RequestBody final Map<String, Object> proof)
+  @PostMapping(value= "/verify")
+  Map<String, String> verifyCredential(
+      @RequestBody final String proof)
       throws InvalidProtocolBufferException, ExecutionException, InterruptedException,
       DidException, VerificationFailedException {
     verificationService.verifyProof(proof);
+    Map<String,String> map = new HashMap<>();
+    map.put("result", "proof verified");
+    return map;
   }
 
 }
